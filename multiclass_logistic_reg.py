@@ -11,6 +11,8 @@ def softmax(x):
 
 class classifier(object):
     def __init__(self, input_size, classes, debug=True):
+        '''Initialize the classifier with the input vector size
+        and the number of classes required'''
         self.input_size = input_size
         self.classes = classes
         self.W = random.randn(input_size, classes)
@@ -25,25 +27,31 @@ class classifier(object):
         return self.cost_over_time
 
     def Y(self, train_data):
-        '''The model'''
+        '''The model that predicts the class of the input vectors using
+        the current parmeters.'''
         a = dot(train_data, self.W) + np.tile(self.b.flatten(), (len(train_data), 1))
         return np.array([softmax(x) for x in a])
 
     def costf(self, train_data, train_targets):
         '''The traindata should contain the training inputs and
-        train_targets the target vectors'''
+        train_targets the target vectors. Evaluates the cross entropy cost
+        with the current set of data and parameters'''
         Y = self.Y(train_data)
         J = -sum([dot(t, ly) for t,ly in zip(train_targets, np.nan_to_num(np.log(Y)))])
         return J
 
     def grad_costf(self, train_data, train_targets):
-        '''Computes the gradient of the cost function for a batch'''
+        '''Computes the gradient of the cost function for a batch. This one was hell
+        to calculate by hand but I did it.'''
         Y = self.Y(train_data)
         gradW = dot(train_data.T, (Y - train_targets))
         gradb = np.reshape(np.sum(Y - train_targets, axis=0), (self.classes, 1)) 
         return gradW, gradb
 
     def GD(self, train_data, train_targets, epochs=30, eta=0.01):
+        '''Trains the classifier using gradient descent. Uses the entire
+        dataset for a single epoch. Maybe I\'ll implement the stochastic
+        version soon.'''
         #Reserve the array 
         self.cost_over_time = np.zeros(epochs)
         #Start the training
