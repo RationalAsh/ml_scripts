@@ -69,18 +69,20 @@ class classifier(object):
 
 if __name__=='__main__':
     #Create dummy data for the classes
-    cl1 = random.multivariate_normal([0, 10], np.identity(2), 100)
-    cl2 = random.multivariate_normal([0, -10], np.identity(2), 100)
-    cl3 = random.multivariate_normal([10, 0], np.identity(2), 100)
-    cl4 = random.multivariate_normal([-10, 0], np.identity(2), 100)
-    t1 = np.tile([1,0,0,0], (len(cl1), 1))
-    t2 = np.tile([0,1,0,0], (len(cl2), 1))
-    t3 = np.tile([0,0,1,0], (len(cl3), 1))
-    t4 = np.tile([0,0,0,1], (len(cl4), 1))
+    cl1 = random.multivariate_normal([0, 2], 0.2*np.identity(2), 100)
+    cl2 = random.multivariate_normal([0, -2], 0.2*np.identity(2), 100)
+    cl3 = random.multivariate_normal([2, 0], 0.2*np.identity(2), 100)
+    cl4 = random.multivariate_normal([-2, 0], 0.2*np.identity(2), 100)
+    cl5 = random.multivariate_normal([0, -5], 0.2*np.identity(2), 100)
+    t1 = np.tile([1,0,0,0,0], (len(cl1), 1))
+    t2 = np.tile([0,1,0,0,0], (len(cl2), 1))
+    t3 = np.tile([0,0,1,0,0], (len(cl3), 1))
+    t4 = np.tile([0,0,0,1,0], (len(cl4), 1))
+    t5 = np.tile([0,0,0,0,1], (len(cl5), 1))
     
     #Everyday I'm shuffling
-    DATA = np.vstack((cl1, cl2, cl3, cl4))
-    TARGS = np.vstack((t1, t2, t3, t4))
+    DATA = np.vstack((cl1, cl2, cl3, cl4, cl5))
+    TARGS = np.vstack((t1, t2, t3, t4, t5))
     COMB = np.hstack((DATA, TARGS))
     #Shufflin' shufflin' shufflin'
     np.random.shuffle(COMB)
@@ -91,7 +93,7 @@ if __name__=='__main__':
     plt.scatter(X[:,0], X[:,1])
     plt.title('Unclassified data plot')
 
-    clf = classifier(2, 4)
+    clf = classifier(2, 5)
     clf.GD(X, T, epochs=40)
 
     plt.figure()
@@ -110,6 +112,7 @@ if __name__=='__main__':
     
     # Put the result into a color plot
     plt.figure()
+    plt.title('Plot of the decision boundaries')
     Z = Z.reshape(xx.shape)
     plt.contourf(xx, yy, Z, cmap=plt.cm.Paired)
     plt.axis('off')
