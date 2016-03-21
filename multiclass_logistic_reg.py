@@ -82,6 +82,7 @@ if __name__=='__main__':
     DATA = np.vstack((cl1, cl2, cl3, cl4))
     TARGS = np.vstack((t1, t2, t3, t4))
     COMB = np.hstack((DATA, TARGS))
+    #Shufflin' shufflin' shufflin'
     np.random.shuffle(COMB)
     X = COMB[:,:2]
     T = COMB[:,2:]
