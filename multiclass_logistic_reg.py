@@ -37,7 +37,7 @@ class classifier(object):
         train_targets the target vectors. Evaluates the cross entropy cost
         with the current set of data and parameters'''
         Y = self.Y(train_data)
-        J = -sum([dot(t, ly) for t,ly in zip(train_targets, np.nan_to_num(np.log(Y)))])
+        J = -sum([dot(t, ly) for t,ly in zip(train_targets, np.nan_to_num(np.log(np.nan_to_num(Y))))])
         return J
 
     def grad_costf(self, train_data, train_targets):
@@ -56,7 +56,7 @@ class classifier(object):
         self.cost_over_time = np.zeros(epochs)
         #Start the training
         for i in range(epochs):
-            print("Training Epoch 1...")
+            print("Training Epoch %d..."%(i))
             gradW, gradb = self.grad_costf(train_data, train_targets)
             self.W = self.W - eta*gradW
             self.b = self.b - eta*gradb
@@ -66,6 +66,15 @@ class classifier(object):
                 print("Cost: "+str(cost))
             print("Done")
 
+    def evalData(self, test_data, test_targets):
+        '''Takes the testing data and calculates the number of
+        incorrectly classified inputs'''
+        Y = self.Y(test_data)
+        TOTAL = test_data.shape[0]
+        corrects = np.array(np.argmax(Y, axis=1) == np.argmax(test_targets, axis=1), dtype=float)
+        pcor = 100*sum(corrects)/TOTAL
+        print("Percentage correctly Classified: "+str(pcor))
+
 
 if __name__=='__main__':
     #Create dummy data for the classes
@@ -73,7 +82,7 @@ if __name__=='__main__':
     cl2 = random.multivariate_normal([0, -2], 0.2*np.identity(2), 100)
     cl3 = random.multivariate_normal([2, 0], 0.2*np.identity(2), 100)
     cl4 = random.multivariate_normal([-2, 0], 0.2*np.identity(2), 100)
-    cl5 = random.multivariate_normal([0, -5], 0.2*np.identity(2), 100)
+    cl5 = random.multivariate_normal([-5, 0], 0.2*np.identity(2), 100)
     t1 = np.tile([1,0,0,0,0], (len(cl1), 1))
     t2 = np.tile([0,1,0,0,0], (len(cl2), 1))
     t3 = np.tile([0,0,1,0,0], (len(cl3), 1))
@@ -94,7 +103,7 @@ if __name__=='__main__':
     plt.title('Unclassified data plot')
 
     clf = classifier(2, 5)
-    clf.GD(X, T, epochs=40)
+    clf.GD(X, T, epochs=150, eta=0.001)
 
     plt.figure()
     plt.title('Cost over time')
