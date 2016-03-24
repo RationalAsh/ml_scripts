@@ -66,6 +66,31 @@ class classifier(object):
                 print("Cost: "+str(cost))
             print("Done")
 
+    def SGD(self, train_data, train_targets, batch_size=10, epochs=30, eta=0.01):
+        '''Trains the data using stochastic gradient descent.'''
+        self.cost_over_time = np.zeros(epochs)
+
+        for i in range(epochs):
+            print("Training Epoch %d..."%(i))
+            #Split the data into mini batches
+            NROWS = train_data.shape[0]
+            ROWS = [n for n in range(NROWS)]
+            random.shuffle(ROWS)
+            batches = [ROWS[n:n+batch_size] for n in range(0,NROWS,batch_size)] 
+            
+            for batch in batches:
+                #Compute the gradient for the mini batches
+                gradW, gradb = self.grad_costf(train_data[batch,:], train_targets[batch,:])
+                #Do gradient descent for each of the mini batches
+                self.W = self.W - eta*gradW
+                self.b = self.b - eta*gradb
+            
+            if self.DEBUG:
+                cost = self.costf(train_data, train_targets)
+                self.cost_over_time[i] = cost
+                print("Cost: "+str(cost))
+            print("Done")
+
     def evalData(self, test_data, test_targets):
         '''Takes the testing data and calculates the number of
         incorrectly classified inputs'''
@@ -103,7 +128,7 @@ if __name__=='__main__':
     plt.title('Unclassified data plot')
 
     clf = classifier(2, 5)
-    clf.GD(X, T, epochs=150, eta=0.001)
+    clf.SGD(X, T, epochs=100, eta=0.01, batch_size=20)
 
     plt.figure()
     plt.title('Cost over time')
