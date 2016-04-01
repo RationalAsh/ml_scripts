@@ -19,6 +19,8 @@ class classifier(object):
         self.b = random.randn(classes, 1)
         self.DEBUG = debug
         self.cost_over_time = np.zeros(100)
+        #Regularization parameter
+        self.l = 1.
 
     def setDebug(lev=True):
         self.DEBUG = lev
@@ -37,14 +39,15 @@ class classifier(object):
         train_targets the target vectors. Evaluates the cross entropy cost
         with the current set of data and parameters'''
         Y = self.Y(train_data)
-        J = -sum([dot(t, ly) for t,ly in zip(train_targets, np.nan_to_num(np.log(np.nan_to_num(Y))))])
+        J = -sum([dot(t, ly) for t,ly in zip(train_targets, np.nan_to_num(np.log(np.nan_to_num(Y))))])\
+            + 0.5*self.l*(np.linalg.norm(self.W))**2
         return J
 
     def grad_costf(self, train_data, train_targets):
         '''Computes the gradient of the cost function for a batch. This one was hell
         to calculate by hand but I did it.'''
         Y = self.Y(train_data)
-        gradW = dot(train_data.T, (Y - train_targets))
+        gradW = dot(train_data.T, (Y - train_targets)) + 2*self.l*self.W
         gradb = np.reshape(np.sum(Y - train_targets, axis=0), (self.classes, 1)) 
         return gradW, gradb
 
@@ -66,10 +69,10 @@ class classifier(object):
                 print("Cost: "+str(cost))
             print("Done")
 
-    def SGD(self, train_data, train_targets, batch_size=10, epochs=30, eta=0.01):
+    def SGD(self, train_data, train_targets, batch_size=10, epochs=30, eta=0.01, momentum=0.999):
         '''Trains the data using stochastic gradient descent.'''
         self.cost_over_time = np.zeros(epochs)
-
+        et = eta
         for i in range(epochs):
             print("Training Epoch %d..."%(i))
             #Split the data into mini batches
@@ -82,13 +85,16 @@ class classifier(object):
                 #Compute the gradient for the mini batches
                 gradW, gradb = self.grad_costf(train_data[batch,:], train_targets[batch,:])
                 #Do gradient descent for each of the mini batches
-                self.W = self.W - eta*gradW
-                self.b = self.b - eta*gradb
+                self.W = self.W - et*gradW
+                self.b = self.b - et*gradb
             
             if self.DEBUG:
                 cost = self.costf(train_data, train_targets)
                 self.cost_over_time[i] = cost
                 print("Cost: "+str(cost))
+
+            #learning rate decay
+            et = et*momentum
             print("Done")
 
     def evalData(self, test_data, test_targets):
@@ -128,7 +134,7 @@ if __name__=='__main__':
     plt.title('Unclassified data plot')
 
     clf = classifier(2, 5)
-    clf.SGD(X, T, epochs=100, eta=0.01, batch_size=20)
+    clf.SGD(X, T, epochs=200, eta=0.01, batch_size=20)
 
     plt.figure()
     plt.title('Cost over time')
