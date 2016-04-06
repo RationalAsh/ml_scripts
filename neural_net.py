@@ -2,6 +2,9 @@
 
 import numpy as np
 from numpy import random, dot
+from pastalog import Log
+
+#log_a = Log('http://localhost:8220', 'modelA')
 
 #Sigmoid function
 def sigmoid(z):
@@ -91,7 +94,7 @@ class ANN(object):
                 self.weights[i] = self.weights[i] - eta*gradWs[-(i+1)]
                 self.biases[i] = self.biases[i] - eta*gradbs[-(i+1)]
 
-            eta = eta*(1-alpha)
+            #eta = eta*(1-alpha)
 
             if self.DEBUG:
                 cost = self.costf(train_targets)
@@ -121,6 +124,7 @@ class ANN(object):
         corrects = np.array(np.argmax(Y, axis=1) == np.argmax(test_targets, axis=1), dtype=float)
         pcor = 100*sum(corrects)/TOTAL
         print("Percentage correctly Classified: "+str(pcor))
+        return pcor
     
 
 if __name__ == '__main__':
@@ -132,7 +136,7 @@ if __name__ == '__main__':
     INPUTS = 784
     HIDDEN0 = 30
     OUTPUTS = CLASSES
-    EPOCHS = 40
+    EPOCHS = 500
 
     print("Loading the dataset...")
     DATA = np.genfromtxt('mnist_train.csv', delimiter=',', max_rows=20000)
@@ -156,7 +160,39 @@ if __name__ == '__main__':
 
     #Initialize the neural network
     nn = ANN([INPUTS, HIDDEN0, OUTPUTS])
-    nn.GD(X,T, eta=0.001, epochs=10)
+    
+    eta = 0.00005
+    #Manual implementation of training to test
+    for i in range(EPOCHS):
+        print("Training epoch %d: "%(i))
+        #Do feedforward on the network to get the activations
+        Y = nn.feedforward(X).T
 
-    
-    
+        #Get the delta for the last layer.
+        D2 = (Y-T)
+        gradW2 = np.dot(nn.activations[0], D2).T
+        gradb2 = np.sum(D2, axis=0).reshape(-1,1)
+
+        #Backpropogate the errors
+        D1 = np.dot(D2, nn.weights[1])
+        gradW1 = np.dot(X.T, D1).T
+        gradb1 = np.sum(D1, axis=0).reshape(-1,1)
+
+        #Do the gradient descent step
+        nn.weights[1] = nn.weights[1] - eta*gradW2
+        nn.biases[1] = nn.biases[1] - eta*gradb2
+
+        nn.weights[0] = nn.weights[0] - eta*gradW1
+        nn.biases[0] = nn.biases[0] - eta*gradb1
+
+        #Evaluate and print the cost
+        cost = nn.costf(T)
+        print("Cost: %f" %(cost))
+        print("Done")
+
+        #log_a.post('Cross Entropy Cost', value=cost, step=i)
+
+        #Evaluate the model on the test set
+        pcor = nn.evalData(X1, T1)
+        #log_a.post('Test Accuracy', value=pcor, step=i)
+        
